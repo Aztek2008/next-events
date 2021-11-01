@@ -1,15 +1,19 @@
-import { events } from '../Events';
-
+import { useState, MouseEvent } from 'react';
+import { IEvent } from '../../typings';
+import { EventListItem } from '../EventListItem/EventListItem';
 import styles from '../../styles/Home.module.css';
 
-export const EventList = () => (
-  <div className={styles.grid}>
-    {events.map((event, idx) => (
-      <div key={event.title + idx} className={styles.card}>
-        <h2>{event.title} &rarr;</h2>
-        <p>{event.content}</p>
-        {event.favorite ? <div className={styles.fav}>&#x2B50;</div> : null}
-      </div>
-    ))}
-  </div>
-);
+type Props = {
+  events: IEvent[];
+  makeStarred: (eventId: string | undefined, isFavorite: boolean) => void;
+};
+
+export const EventList = ({ events, makeStarred }: Props) => {
+  return (
+    <div className={styles.grid}>
+      {events.map((event: IEvent) => (
+        <EventListItem key={event.id} event={event} makeStarred={makeStarred} />
+      ))}
+    </div>
+  );
+};

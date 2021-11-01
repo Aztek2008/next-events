@@ -1,12 +1,11 @@
 import firebase from 'firebase/app';
-
 import 'firebase/auth';
 import 'firebase/firestore';
 import 'firebase/storage';
 import 'firebase/database';
 
 const firebaseConfig = {
-  apiKey: process.env.API_KEY,
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: 'next-event-a40d0.firebaseapp.com',
   databaseURL:
     'https://next-event-a40d0-default-rtdb.europe-west1.firebasedatabase.app',
@@ -19,6 +18,6 @@ const firebaseConfig = {
 if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
   console.log('Firebase initiated successfully');
-  // console.log(`firebase: `, firebase.apps);
 }
+
 export default firebase;

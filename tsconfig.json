@@ -18,7 +18,7 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    "components/AuthModal/AuthModal.jsx"
+    "components/AuthModal/AuthModal.tsx"
   ],
   "exclude": ["node_modules"]
 }

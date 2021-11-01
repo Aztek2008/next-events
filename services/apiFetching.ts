@@ -1,20 +1,19 @@
-// import axios, { AxiosRequestConfig } from 'axios';
+import axios from 'axios';
 
-// const options: AxiosRequestConfig = {
-//   method: 'GET',
-//   url: 'https://seatgeek-seatgeekcom.p.rapidapi.com/taxonomies',
-//   headers: {
-//     'x-rapidapi-host': 'seatgeek-seatgeekcom.p.rapidapi.com',
-//     'x-rapidapi-key': 'fef0ad87b9msh1eb0f0bf0986369p1d26adjsnbdf796c10a2e',
-//   },
-// };
+const CLIENT_ID = process.env.NEXT_PUBLIC_EVENT_API_CLIENT_ID;
+const CLIENT_SECRET = process.env.NEXT_PUBLIC_EVENT_API_APP_SECRET;
+// const EVENT_ID = null;
 
-// axios
-//   .request(options)
-//   .then(function (response) {
-//     console.log(response.data);
-//   })
-//   .catch(function (error) {
-//     console.error(error);
-//   });
-export {};
+const QUERY_URL = `https://api.seatgeek.com/2/events?client_id=${CLIENT_ID}&client_secret=${CLIENT_SECRET}`;
+
+// THIS WILL BE USED FOR SINGLE EVENT QURY WHEN USER iIS SIGNED
+// const QUERY_URL_ID = `https://api.seatgeek.com/2/events/${EVENT_ID}?client_id=${CLIENT_ID}client_secret=${CLIENT_SECRET}`;
+
+export const apiFetching = async () => {
+  try {
+    const response = await axios.get(QUERY_URL);
+    return response.data.events;
+  } catch (error) {
+    console.error(error);
+  }
+};
