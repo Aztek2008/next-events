@@ -1,6 +1,6 @@
-import { useEffect, useState, MouseEvent } from 'react';
-import { IEvent } from '../typings';
+import { useEffect, useState } from 'react';
 import type { NextPage } from 'next';
+import { IEvent } from '../typings';
 import firebase from '../config/firebase-config';
 import { NavBar } from '../components/NavBar/NavBar';
 import { Header } from '../components/Header/Header';
@@ -10,6 +10,8 @@ import { AuthModal } from '../components/AuthModal/AuthModal';
 import { EventList } from '../components/EventList/EventList';
 
 import styles from '../styles/Home.module.css';
+import { fetchEvents } from '../services/writeToFirebase';
+import axios from 'axios';
 
 const Home: NextPage = () => {
   const [events, setEvents] = useState<IEvent[]>([]);
@@ -24,11 +26,14 @@ const Home: NextPage = () => {
   // let favBets: (string | undefined)[] = [];
 
   useEffect(() => {
-    const fetching = async () => {
-      const events = await apiFetching();
-      setEvents(events);
+    fetchEvents();
+    const readFromDB = async () => {
+      const events = await axios.get(
+        `https://next-event-a40d0-default-rtdb.europe-west1.firebasedatabase.app/events.json`
+      );
+      setEvents(events.data);
     };
-    fetching();
+    readFromDB();
   }, []);
 
   // console.log(`Loading:`, loading, '|', 'Current user: ', user?.email);
@@ -39,16 +44,11 @@ const Home: NextPage = () => {
     firebase.auth().signOut();
   };
 
-  const handleStarring = (eventId: string | undefined, isFavorite: boolean) => {
-    console.log(`eventId`, eventId);
-    console.log(`isFavorite`, isFavorite);
-  };
-
-  const eventItemMarkFavorite = (e: MouseEvent<Element>) => {
-    const eventId = e.target.parentNode.id;
-
-    // !filteredIds.includes(eventId) &&
-    //   setFilteredIds((prev) => [...prev, eventId]);
+  const eventItemMarkFavorite = (
+    eventId: string | undefined,
+    isFavorite: boolean
+  ) => {
+    // const eventId = e.target.parentNode.id;
     // events[0].is_open = !events[0].is_open;
 
     const filtered: IEvent | undefined = events.find(
@@ -77,7 +77,7 @@ const Home: NextPage = () => {
         <AuthModal open={open} handleClose={handleClose} />
         {user && <NavBar />}
         {events.length > 0 ? (
-          <EventList events={events} makeStarred={handleStarring} />
+          <EventList events={events} makeStarred={eventItemMarkFavorite} />
         ) : (
           <span>No events</span>
         )}

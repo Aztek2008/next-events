@@ -5,14 +5,13 @@ import 'firebase/storage';
 import 'firebase/database';
 
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: 'next-event-a40d0.firebaseapp.com',
-  databaseURL:
-    'https://next-event-a40d0-default-rtdb.europe-west1.firebasedatabase.app',
-  projectId: 'next-event-a40d0',
-  storageBucket: 'next-event-a40d0.appspot.com',
-  messagingSenderId: '508892583677',
-  appId: '1:508892583677:web:e3b6a63c3eaad305d25094',
+  apiKey: process.env.NEXT_PUBLIC_EVENT_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_EVENT_AUTH_DOMAIN,
+  databaseURL: process.env.NEXT_PUBLIC_EVENT_DB_URL,
+  projectId: process.env.NEXT_PUBLIC_EVENT_PROJ_ID,
+  storageBucket: process.env.NEXT_PUBLIC_EVENT_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_EVENT_MSG_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_EVENT_APP_ID,
 };
 
 if (!firebase.apps.length) {
