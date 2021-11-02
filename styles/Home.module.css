@@ -52,7 +52,11 @@
 
 .button:hover {
   background-color: rgb(238, 238, 238);
-  box-shadow: 0px 5px 10px 2px rgba(34, 60, 80, 0.2) inset;
+  box-shadow: 0px 5px 10px 2px rgba(34, 60, 80, 0.1) inset;
+}
+
+.button:active {
+  background-color: rgb(204, 202, 202);
 }
 
 .navButton {
@@ -67,8 +71,18 @@
   font-size: 18px;
   width: 48%;
   height: 100%;
+  background-color: inherit;
   text-transform: uppercase;
   cursor: pointer;
+}
+
+.navButton:hover {
+  background-color: rgb(238, 238, 238);
+  box-shadow: 0px 5px 10px 2px rgba(34, 60, 80, 0.1) inset;
+}
+
+.navButton:active {
+  background-color: rgb(204, 202, 202);
 }
 
 .avatar {

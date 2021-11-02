@@ -3,7 +3,7 @@ export interface IPerformers {
   divisions: null;
   has_upcoming_events: boolean;
   home_venue_id: null;
-  id: number | string;
+  id: number;
   image: string;
   image_attribution: null | string;
   image_license: null | string;
@@ -24,7 +24,7 @@ export interface IPerformers {
 
 export interface IEvent {
   type: string;
-  id: string | undefined;
+  id: number;
   datetime_utc: Date;
   venue: {};
   datetime_tbd: boolean;

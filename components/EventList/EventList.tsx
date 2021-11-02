@@ -5,7 +5,7 @@ import styles from '../../styles/Home.module.css';
 
 type Props = {
   events: IEvent[];
-  makeStarred: (eventId: string | undefined, isFavorite: boolean) => void;
+  makeStarred: (eventId: number, isFavorite: boolean) => void;
 };
 
 export const EventList = ({ events, makeStarred }: Props) => {

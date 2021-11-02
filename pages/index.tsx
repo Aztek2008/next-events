@@ -1,29 +1,25 @@
-import { useEffect, useState } from 'react';
-import type { NextPage } from 'next';
+import axios from 'axios';
 import { IEvent } from '../typings';
+import type { NextPage } from 'next';
+import { useEffect, useState } from 'react';
 import firebase from '../config/firebase-config';
 import { NavBar } from '../components/NavBar/NavBar';
 import { Header } from '../components/Header/Header';
-import { apiFetching } from '../services/apiFetching';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { AuthModal } from '../components/AuthModal/AuthModal';
 import { EventList } from '../components/EventList/EventList';
+import { fetchEvents } from '../services/writeToFirebase';
 
 import styles from '../styles/Home.module.css';
-import { fetchEvents } from '../services/writeToFirebase';
-import axios from 'axios';
 
 const Home: NextPage = () => {
   const [events, setEvents] = useState<IEvent[]>([]);
   const [filteredEvents, setFilteredEvents] = useState<IEvent[]>([]);
-  const [starred, setStarred] = useState<boolean>(false);
-  // const [filteredIds, setFilteredIds] = useState<string[]>([]);
   const [open, setOpen] = useState<boolean>(false);
   const [user, loading, error] = useAuthState(firebase.auth());
 
   const userEmail = user?.email;
   const userName = userEmail && userEmail.slice(0, userEmail?.indexOf('@'));
-  // let favBets: (string | undefined)[] = [];
 
   useEffect(() => {
     fetchEvents();
@@ -44,24 +40,27 @@ const Home: NextPage = () => {
     firebase.auth().signOut();
   };
 
-  const eventItemMarkFavorite = (
-    eventId: string | undefined,
-    isFavorite: boolean
-  ) => {
-    // const eventId = e.target.parentNode.id;
-    // events[0].is_open = !events[0].is_open;
+  const handleMarkAsFavorite = (eventId: number, isFavorite: boolean) => {
+    if (filteredEvents.length && isFavorite === false) {
+      const eventToRemove: IEvent | undefined = filteredEvents.find(
+        (event) => Number(event.id) === Number(eventId)
+      );
+      const index = filteredEvents.indexOf(eventToRemove);
+      setFilteredEvents(filteredEvents.splice(index, 1));
+    }
 
-    const filtered: IEvent | undefined = events.find(
+    const filteredEvent = events.find(
       (event) => Number(event.id) === Number(eventId)
     );
 
-    const filteredId = filtered?.id?.toString();
+    const filteredEventId = filteredEvent?.id?.toString();
+
     const persistedEvent = filteredEvents.find(
-      (filteredEvent) => Number(filteredEvent.id) === Number(filteredId)
+      (filteredEvent) => Number(filteredEvent.id) === Number(filteredEventId)
     );
 
-    if (filtered && !persistedEvent) {
-      setFilteredEvents((prev) => [...prev, filtered]);
+    if (filteredEvent && !persistedEvent) {
+      setFilteredEvents((prev) => [...prev, filteredEvent]);
     }
   };
 
@@ -77,7 +76,7 @@ const Home: NextPage = () => {
         <AuthModal open={open} handleClose={handleClose} />
         {user && <NavBar />}
         {events.length > 0 ? (
-          <EventList events={events} makeStarred={eventItemMarkFavorite} />
+          <EventList events={events} makeStarred={handleMarkAsFavorite} />
         ) : (
           <span>No events</span>
         )}
