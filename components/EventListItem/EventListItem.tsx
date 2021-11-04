@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { IEvent } from '../../typings';
 import Image from 'next/image';
 
@@ -6,15 +6,19 @@ import styles from '../../styles/Home.module.css';
 
 type Props = {
   event: IEvent;
-  makeStarred: (eventId: number, isFavorite: boolean) => void;
+  makeFavorite: (eventId: number, isFavorite: boolean) => void;
 };
+//=================================================================
+export const EventListItem = ({ event, makeFavorite }: Props) => {
+  const [star, setStar] = useState<boolean>(false);
 
-export const EventListItem = ({ event, makeStarred }: Props) => {
-  const [favorite, setFavorite] = useState<boolean>(false);
+  useEffect(() => {
+    event.fav_id && setStar(true);
+  }, [event]);
 
-  const handleClick = () => {
-    setFavorite((prev) => !prev);
-    makeStarred(event.id, !favorite);
+  const handleClick = (): void => {
+    setStar((prev) => !prev);
+    makeFavorite(event.id, !star);
   };
 
   return (
@@ -31,7 +35,7 @@ export const EventListItem = ({ event, makeStarred }: Props) => {
         height={70}
       />
 
-      {favorite ? (
+      {star ? (
         <div onClick={handleClick} className={styles.fav}>
           &#9733;
         </div>

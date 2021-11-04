@@ -1,4 +1,3 @@
-import axios from 'axios';
 import { IEvent } from '../typings';
 import type { NextPage } from 'next';
 import { useEffect, useState } from 'react';
@@ -8,31 +7,29 @@ import { Header } from '../components/Header/Header';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { AuthModal } from '../components/AuthModal/AuthModal';
 import { EventList } from '../components/EventList/EventList';
-import { fetchEvents } from '../services/writeToFirebase';
+import {
+  removeFavoriteEventFromDB,
+  saveFavoriteEventToDB,
+  writeAllEventsToDB,
+} from '../services/writeToFirebase';
+import {
+  readAllEventsFromDB,
+  readFavoriteEventsFromDB,
+} from '../services/readFromFirebase';
 
 import styles from '../styles/Home.module.css';
 
 const Home: NextPage = () => {
   const [events, setEvents] = useState<IEvent[]>([]);
-  const [filteredEvents, setFilteredEvents] = useState<IEvent[]>([]);
-  const [open, setOpen] = useState<boolean>(false);
+  const [favoriteEvents, setFavoriteEvents] = useState<IEvent[]>([]);
+  const [favoriteChecked, setFavoriteCheckecd] = useState<boolean>(false);
+  const [starTrigger, setStarTrigger] = useState<boolean>(false);
   const [user, loading, error] = useAuthState(firebase.auth());
+  const [open, setOpen] = useState<boolean>(false);
 
   const userEmail = user?.email;
+  const USER_ID = process.env.NEXT_PUBLIC_EVENT_API_CLIENT_ID;
   const userName = userEmail && userEmail.slice(0, userEmail?.indexOf('@'));
-
-  useEffect(() => {
-    fetchEvents();
-    const readFromDB = async () => {
-      const events = await axios.get(
-        `https://next-event-a40d0-default-rtdb.europe-west1.firebasedatabase.app/events.json`
-      );
-      setEvents(events.data);
-    };
-    readFromDB();
-  }, []);
-
-  // console.log(`Loading:`, loading, '|', 'Current user: ', user?.email);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
@@ -40,27 +37,46 @@ const Home: NextPage = () => {
     firebase.auth().signOut();
   };
 
-  const handleMarkAsFavorite = (eventId: number, isFavorite: boolean) => {
-    if (filteredEvents.length && isFavorite === false) {
-      const eventToRemove: IEvent | undefined = filteredEvents.find(
+  useEffect(() => {
+    writeAllEventsToDB();
+    readAllEventsFromDB(setEvents);
+  }, []);
+
+  useEffect(() => {
+    readFavoriteEventsFromDB(USER_ID, setFavoriteEvents);
+  }, [favoriteChecked, starTrigger]);
+
+  // console.log(`Loading:`, loading, '|', 'Current user: ', user?.email);
+
+  const handleFavoriteList = (eventId: number, isFavorite: boolean) => {
+    // REMOVE DISLIKED EVENT FROM ARRAY
+    if (!isFavorite) {
+      const eventToRemoveFromList: IEvent | undefined = favoriteEvents.find(
         (event) => Number(event.id) === Number(eventId)
       );
-      const index = filteredEvents.indexOf(eventToRemove);
-      setFilteredEvents(filteredEvents.splice(index, 1));
+
+      if (eventToRemoveFromList) {
+        removeFavoriteEventFromDB(USER_ID, eventToRemoveFromList.fav_id);
+        setStarTrigger((state) => !state);
+      }
     }
 
-    const filteredEvent = events.find(
-      (event) => Number(event.id) === Number(eventId)
-    );
+    if (isFavorite) {
+      // EVENT MARKED AT LIST ITEM COMPONENT
+      const markedEvent = events.find(
+        (event) => Number(event.id) === Number(eventId)
+      );
 
-    const filteredEventId = filteredEvent?.id?.toString();
+      // EVENT PERSISTED AT FILTERED AND EQUALS TO MARKED AT LIST ITEM COMPONENT
+      const persistedEvent = favoriteEvents.find(
+        (favoriteEvent) => favoriteEvent.id === markedEvent?.id
+      );
 
-    const persistedEvent = filteredEvents.find(
-      (filteredEvent) => Number(filteredEvent.id) === Number(filteredEventId)
-    );
-
-    if (filteredEvent && !persistedEvent) {
-      setFilteredEvents((prev) => [...prev, filteredEvent]);
+      // SAVE TO FAVORITES IF NO DOUBLES
+      if (markedEvent && !persistedEvent) {
+        saveFavoriteEventToDB(USER_ID, markedEvent);
+        setStarTrigger((state) => !state);
+      }
     }
   };
 
@@ -74,12 +90,12 @@ const Home: NextPage = () => {
           userName={userName}
         />
         <AuthModal open={open} handleClose={handleClose} />
-        {user && <NavBar />}
-        {events.length > 0 ? (
-          <EventList events={events} makeStarred={handleMarkAsFavorite} />
-        ) : (
-          <span>No events</span>
-        )}
+        {user && <NavBar toggleFavorite={setFavoriteCheckecd} />}
+
+        <EventList
+          events={favoriteChecked ? favoriteEvents : events}
+          makeFavorite={handleFavoriteList}
+        />
       </main>
     </div>
   );

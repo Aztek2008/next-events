@@ -45,6 +45,7 @@ export interface IEvent {
   title: string;
   popularity: number;
   description: string;
+  fav_id: string;
   status: string;
   access_method: null;
   event_promotion: null;

@@ -1,19 +1,26 @@
-import { useState, MouseEvent } from 'react';
 import { IEvent } from '../../typings';
 import { EventListItem } from '../EventListItem/EventListItem';
 import styles from '../../styles/Home.module.css';
 
 type Props = {
   events: IEvent[];
-  makeStarred: (eventId: number, isFavorite: boolean) => void;
+  makeFavorite: (eventId: number, isFavorite: boolean) => void;
 };
 
-export const EventList = ({ events, makeStarred }: Props) => {
+export const EventList = ({ events, makeFavorite }: Props) => {
   return (
     <div className={styles.grid}>
-      {events.map((event: IEvent) => (
-        <EventListItem key={event.id} event={event} makeStarred={makeStarred} />
-      ))}
+      {events?.length > 0 ? (
+        events.map((event: IEvent) => (
+          <EventListItem
+            key={event.id}
+            event={event}
+            makeFavorite={makeFavorite}
+          />
+        ))
+      ) : (
+        <span>No events</span>
+      )}
     </div>
   );
 };
