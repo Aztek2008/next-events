@@ -1,25 +1,25 @@
 import React, { useState } from 'react';
+import { useAppDispatch, useAppSelector } from '../../redux/hooks';
+import { setFavoriteChecked } from '../../redux/interfaceSlice';
 
 import styles from '../../styles/Home.module.css';
 
-type Props = {
-  toggleFavorite: (isFavorite: boolean) => void;
-};
-
-export const NavBar = ({ toggleFavorite }: Props) => {
-  const [favorite, setFavorite] = useState<boolean>(false);
-
-  const handleClick = (): void => {
-    setFavorite((prev) => !prev);
-    toggleFavorite(!favorite);
-  };
+export const NavBar = () => {
+  const dispatch = useAppDispatch();
+  const { favoriteChecked } = useAppSelector((state) => state.interface);
 
   return (
     <nav className={styles.header}>
-      <button onClick={handleClick} className={styles.navButton}>
+      <button
+        onClick={() => dispatch(setFavoriteChecked())}
+        className={`${styles.navButton} ${favoriteChecked && styles.active}`}
+      >
         Favorites
       </button>
-      <button onClick={handleClick} className={styles.navButton}>
+      <button
+        onClick={() => dispatch(setFavoriteChecked())}
+        className={`${styles.navButton} ${!favoriteChecked && styles.active}`}
+      >
         All
       </button>
     </nav>

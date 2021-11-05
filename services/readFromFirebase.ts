@@ -1,42 +1,41 @@
+import { createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
-import { Dispatch, SetStateAction } from 'react';
-import { IEvent } from '../typings';
 
-export const readAllEventsFromDB = async (
-  setEvents: Dispatch<SetStateAction<IEvent[]>>
-) => {
-  try {
-    const events = await axios.get(
-      `https://next-event-a40d0-default-rtdb.europe-west1.firebasedatabase.app/events.json`
-    );
-    setEvents(events.data);
-  } catch (error) {
-    console.error(error);
-  }
-};
+const BASE_URL = `https://next-event-a40d0-default-rtdb.europe-west1.firebasedatabase.app/`;
 
-export const readFavoriteEventsFromDB = async (
-  userId: string | undefined,
-  setFavEvents: Dispatch<SetStateAction<IEvent[]>>
-) => {
-  try {
-    const events = await axios.get(
-      `https://next-event-a40d0-default-rtdb.europe-west1.firebasedatabase.app/user-events/${userId}.json`
-    );
-
-    const eventObject = events.data;
-    const bufferEvents = [];
-
-    // RESTRUCT OBJECT TO ARRAY
-    for (const key in eventObject) {
-      if (Object.prototype.hasOwnProperty.call(eventObject, key)) {
-        const element = eventObject[key];
-        bufferEvents.push(element);
-      }
+export const readAllEventsFromDB = createAsyncThunk(
+  'EVENTS/READ_EVENTS_FROM_DB',
+  async () => {
+    try {
+      const events = await axios.get(`${BASE_URL}/events.json`);
+      return events.data;
+    } catch (error) {
+      console.error(error);
     }
-
-    setFavEvents(bufferEvents);
-  } catch (error) {
-    console.error(error);
   }
-};
+);
+
+export const readFavoriteEventsFromDB = createAsyncThunk(
+  'EVENTS/READ_FAV_EVENTS_FROM_DB',
+  async (userId: string | undefined) => {
+    try {
+      const events = await axios.get(`${BASE_URL}user-events/${userId}.json`);
+
+      const eventObject = events.data;
+      const bufferEvents = [];
+
+      // RESTRUCT OBJECT TO ARRAY
+      for (const key in eventObject) {
+        if (Object.prototype.hasOwnProperty.call(eventObject, key)) {
+          const element = eventObject[key];
+          bufferEvents.push(element);
+        }
+      }
+
+      return bufferEvents;
+      // setFavEvents(bufferEvents);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+);

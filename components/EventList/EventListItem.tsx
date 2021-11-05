@@ -1,16 +1,16 @@
+import StarOutlineRoundedIcon from '@mui/icons-material/StarOutlineRounded';
+import StarRoundedIcon from '@mui/icons-material/StarRounded';
 import React, { useEffect, useState } from 'react';
 import { IEvent } from '../../typings';
 import Image from 'next/image';
 
 import styles from '../../styles/Home.module.css';
+import { useAppDispatch } from '../../redux/hooks';
+import { setCandidate } from '../../redux/eventsSlice';
 
-type Props = {
-  event: IEvent;
-  makeFavorite: (eventId: number, isFavorite: boolean) => void;
-};
-//=================================================================
-export const EventListItem = ({ event, makeFavorite }: Props) => {
+export const EventListItem = (event: IEvent) => {
   const [star, setStar] = useState<boolean>(false);
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
     event.fav_id && setStar(true);
@@ -18,12 +18,12 @@ export const EventListItem = ({ event, makeFavorite }: Props) => {
 
   const handleClick = (): void => {
     setStar((prev) => !prev);
-    makeFavorite(event.id, !star);
+    dispatch(setCandidate({ eventId: event.id, hasStar: !star }));
   };
 
   return (
     <div className={styles.card}>
-      <span>{event.type}</span>
+      <span className={styles.eventTitle}>{event.type}</span>
       <h3>{event.title}</h3>
       <p>{event.description}</p>
 
@@ -35,15 +35,9 @@ export const EventListItem = ({ event, makeFavorite }: Props) => {
         height={70}
       />
 
-      {star ? (
-        <div onClick={handleClick} className={styles.fav}>
-          &#9733;
-        </div>
-      ) : (
-        <div onClick={handleClick} className={styles.fav}>
-          &#9734;
-        </div>
-      )}
+      <div onClick={handleClick} className={styles.fav}>
+        {star ? <StarRoundedIcon /> : <StarOutlineRoundedIcon />}
+      </div>
     </div>
   );
 };

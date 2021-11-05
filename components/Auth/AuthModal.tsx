@@ -1,5 +1,5 @@
 import React, { SetStateAction } from 'react';
-import AuthForm from '../AuthForm/AuthForm';
+import AuthForm from './AuthForm';
 import { Modal } from '@mui/material';
 import { Box } from '@mui/system';
 
