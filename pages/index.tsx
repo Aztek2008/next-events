@@ -1,84 +1,61 @@
-import { IEvent } from '../typings';
 import type { NextPage } from 'next';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import firebase from '../config/firebase-config';
 import { NavBar } from '../components/NavBar/NavBar';
 import { Header } from '../components/Header/Header';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { AuthModal } from '../components/AuthModal/AuthModal';
+import { AuthModal } from '../components/Auth/AuthModal';
 import { EventList } from '../components/EventList/EventList';
-import {
-  removeFavoriteEventFromDB,
-  saveFavoriteEventToDB,
-  writeAllEventsToDB,
-} from '../services/writeToFirebase';
+import { writeAllEventsToDB } from '../services/writeToFirebase';
+import { checkIfItemIsFavorite } from '../services/checkIfItemIsFavorite';
+import { useAppDispatch, useAppSelector } from '../redux/hooks';
+import { setOpen } from '../redux/interfaceSlice';
+import { CircularProgress } from '@mui/material';
 import {
   readAllEventsFromDB,
   readFavoriteEventsFromDB,
 } from '../services/readFromFirebase';
 
 import styles from '../styles/Home.module.css';
-
+//=========================================================================
 const Home: NextPage = () => {
-  const [events, setEvents] = useState<IEvent[]>([]);
-  const [favoriteEvents, setFavoriteEvents] = useState<IEvent[]>([]);
-  const [favoriteChecked, setFavoriteCheckecd] = useState<boolean>(false);
-  const [starTrigger, setStarTrigger] = useState<boolean>(false);
-  const [user, loading, error] = useAuthState(firebase.auth());
-  const [open, setOpen] = useState<boolean>(false);
+  const { events, favoriteEvents, candidate, pending, error } = useAppSelector(
+    (state) => state.events
+  );
+  const { favoriteChecked, starTrigger, open } = useAppSelector(
+    (state) => state.interface
+  );
+  const [user, loading, err] = useAuthState(firebase.auth());
 
   const userEmail = user?.email;
   const USER_ID = process.env.NEXT_PUBLIC_EVENT_API_CLIENT_ID;
   const userName = userEmail && userEmail.slice(0, userEmail?.indexOf('@'));
 
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
+  const dispatch = useAppDispatch();
+  const handleOpen = () => dispatch(setOpen(true));
+  const handleClose = () => dispatch(setOpen(false));
   const signingOut = () => {
     firebase.auth().signOut();
   };
 
+  // FETCH FROM API, WRITE TO FIREBASE THEN READ FROM FIREBASE
   useEffect(() => {
     writeAllEventsToDB();
-    readAllEventsFromDB(setEvents);
+    dispatch(readAllEventsFromDB());
+    // eslint-disable-next-line
   }, []);
 
+  // READ FAVORITE EVENTS FROM FIREBASE
   useEffect(() => {
-    readFavoriteEventsFromDB(USER_ID, setFavoriteEvents);
+    dispatch(readFavoriteEventsFromDB(USER_ID));
+    // eslint-disable-next-line
   }, [favoriteChecked, starTrigger]);
 
-  // console.log(`Loading:`, loading, '|', 'Current user: ', user?.email);
-
-  const handleFavoriteList = (eventId: number, isFavorite: boolean) => {
-    // REMOVE DISLIKED EVENT FROM ARRAY
-    if (!isFavorite) {
-      const eventToRemoveFromList: IEvent | undefined = favoriteEvents.find(
-        (event) => Number(event.id) === Number(eventId)
-      );
-
-      if (eventToRemoveFromList) {
-        removeFavoriteEventFromDB(USER_ID, eventToRemoveFromList.fav_id);
-        setStarTrigger((state) => !state);
-      }
-    }
-
-    if (isFavorite) {
-      // EVENT MARKED AT LIST ITEM COMPONENT
-      const markedEvent = events.find(
-        (event) => Number(event.id) === Number(eventId)
-      );
-
-      // EVENT PERSISTED AT FILTERED AND EQUALS TO MARKED AT LIST ITEM COMPONENT
-      const persistedEvent = favoriteEvents.find(
-        (favoriteEvent) => favoriteEvent.id === markedEvent?.id
-      );
-
-      // SAVE TO FAVORITES IF NO DOUBLES
-      if (markedEvent && !persistedEvent) {
-        saveFavoriteEventToDB(USER_ID, markedEvent);
-        setStarTrigger((state) => !state);
-      }
-    }
-  };
+  // REMOVE AND ADD FAVORITE EVENTS TO FIREBASE
+  useEffect(() => {
+    checkIfItemIsFavorite(events, favoriteEvents, candidate, dispatch);
+    // eslint-disable-next-line
+  }, [candidate]);
 
   return (
     <div className={styles.container}>
@@ -90,12 +67,10 @@ const Home: NextPage = () => {
           userName={userName}
         />
         <AuthModal open={open} handleClose={handleClose} />
-        {user && <NavBar toggleFavorite={setFavoriteCheckecd} />}
-
-        <EventList
-          events={favoriteChecked ? favoriteEvents : events}
-          makeFavorite={handleFavoriteList}
-        />
+        {user && <NavBar />}
+        {pending && <CircularProgress className={styles.loader} />}
+        {error && <p>We get an error! </p>}
+        <EventList events={favoriteChecked ? favoriteEvents : events} />
       </main>
     </div>
   );

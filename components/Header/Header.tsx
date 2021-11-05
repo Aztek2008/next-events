@@ -1,5 +1,5 @@
 import React from 'react';
-import { SignButton } from '../SignButtons/SignButtons';
+import { SignButton } from './SignButtons';
 
 import styles from '../../styles/Home.module.css';
 
